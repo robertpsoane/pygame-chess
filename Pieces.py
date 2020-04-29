@@ -158,6 +158,8 @@ class Chesspiece(pygame.sprite.Sprite):
         # in check at the query square.  If currentKingSquare = querySquare,
         # determines whether king is currently in check
         team = self.team
+
+        # Moving king to square being queried
         if currentKingSquare != querySquare:
             remap = map
             remap[currentKingSquare[0]][currentKingSquare[1]] = 'null'
