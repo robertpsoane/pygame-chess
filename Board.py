@@ -182,6 +182,7 @@ class board:
         # Checking legality of move
         moveLegality = sprites[sourcePieceSelection].isMoveLegal(self.set,targetSquare,sprites)
 
+        # If standard legal move
         if moveLegality == True:
             # Adding move to history
             moveCode = sourceSquare+targetSquare
@@ -200,6 +201,117 @@ class board:
             tcount.pieceSelection = 'null'
             self.squareSelection = 'null'
             return True
+        else:
+            specialMove = self.checkSpecialMove(sourceSquare, targetSquare, targetPieceSelection, sprites, tcount)
+            if specialMove is True:
+                return True
+            else:
+                return False
+
+    
+    def checkSpecialMove(self,source,target,targetPiece,sprites,tcount):
+        map = self.set
+        sourcePiece = tcount.pieceSelection
+        sourcePieceSprite = sprites[sourcePiece]
+        # First check - checking for attempted castling
+        # If attempting to move a king, that hasn't moved that isn't in check
+        if sourcePiece[1] == 'k' and sourcePieceSprite.hasMoved is False and sourcePieceSprite.isCheck(map,source,source) is False:
+            king = sourcePieceSprite
+            # Only possible special move is castling
+            # Case by case, starting with white
+            if sourcePiece[0] == 'w':
+                # Checking king side castle, and rook hasn't moved
+                if target == 'G1' and sprites['wr2'].hasMoved is False:
+                    rookSprite = sprites['wr2']
+                    # Checking F1 has is vacant and not in check
+                    if map['F']['1'] == 'null' and sourcePieceSprite.isCheck(map,source,'F1') is False:
+                        # Checking G1 has is vacant and not in check
+                        if map['G']['1'] == 'null' and sourcePieceSprite.isCheck(map,source,'G1') is False:
+                            # Now can castle, kings side
+                            # Adding move to history
+                            moveCode = 'OO-w'
+                            tcount.gameRecord.append(moveCode)
+                            # Updating board map
+                            map['E']['1'] = 'null'
+                            map['H']['1'] = 'null'
+                            map['F']['1'] = 'wr2'
+                            map['G']['1'] = 'wki'
+                            # Moving sprite
+                            king.move(target)
+                            rookSprite.move('F1')
+                            # Deselecting previous selection from board
+                            tcount.pieceSelection = 'null'
+                            self.squareSelection = 'null'
+                            return True
+                if target == 'C1' and sprites['wr1'].hasMoved is False:
+                    rookSprite = sprites['wr1']
+                    # Checking F1 has is vacant and not in check
+                    if map['D']['1'] == 'null' and sourcePieceSprite.isCheck(map,source,'D1') is False:
+                        # Checking G1 has is vacant and not in check
+                        if map['C']['1'] == 'null' and sourcePieceSprite.isCheck(map,source,'C1') is False:
+                            # Now can castle, Queen side
+                            # Adding move to history
+                            moveCode = 'OOOw'
+                            tcount.gameRecord.append(moveCode)
+                            # Updating board map
+                            map['E']['1'] = 'null'
+                            map['A']['1'] = 'null'
+                            map['D']['1'] = 'wr1'
+                            map['C']['1'] = 'wki'
+                            # Moving sprite
+                            king.move(target)
+                            rookSprite.move('D1')
+                            # Deselecting previous selection from board
+                            tcount.pieceSelection = 'null'
+                            self.squareSelection = 'null'
+                            return True
+            else:
+                # Checking king side castle, and rook hasn't moved
+                if target == 'G8' and sprites['br2'].hasMoved is False:
+                    rookSprite = sprites['br2']
+                    # Checking F1 has is vacant and not in check
+                    if map['F']['8'] == 'null' and sourcePieceSprite.isCheck(map,source,'F8') is False:
+                        # Checking G1 has is vacant and not in check
+                        if map['G']['8'] == 'null' and sourcePieceSprite.isCheck(map,source,'G8') is False:
+                            # Now can castle, kings side
+                            # Adding move to history
+                            moveCode = 'OO-b'
+                            tcount.gameRecord.append(moveCode)
+                            # Updating board map
+                            map['E']['8'] = 'null'
+                            map['H']['8'] = 'null'
+                            map['F']['8'] = 'br2'
+                            map['G']['8'] = 'bki'
+                            # Moving sprite
+                            king.move(target)
+                            rookSprite.move('F8')
+                            # Deselecting previous selection from board
+                            tcount.pieceSelection = 'null'
+                            self.squareSelection = 'null'
+                            return True
+                if target == 'C8' and sprites['br1'].hasMoved is False:
+                    rookSprite = sprites['br1']
+                    # Checking F1 has is vacant and not in check
+                    if map['D']['8'] == 'null' and sourcePieceSprite.isCheck(map,source,'D8') is False:
+                        # Checking G1 has is vacant and not in check
+                        if map['C']['8'] == 'null' and sourcePieceSprite.isCheck(map,source,'C8') is False:
+                            # Now can castle, Queen side
+                            # Adding move to history
+                            moveCode = 'OOOw'
+                            tcount.gameRecord.append(moveCode)
+                            # Updating board map
+                            map['E']['8'] = 'null'
+                            map['A']['8'] = 'null'
+                            map['D']['8'] = 'br1'
+                            map['C']['8'] = 'wki'
+                            # Moving sprite
+                            king.move(target)
+                            rookSprite.move('D8')
+                            # Deselecting previous selection from board
+                            tcount.pieceSelection = 'null'
+                            self.squareSelection = 'null'
+                            return True
+                
 
 
 # Function which sets up board coordinate system based on chosen screen size
