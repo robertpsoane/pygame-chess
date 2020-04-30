@@ -8,6 +8,7 @@ import pygame
 from spritesheet import SpriteSheet
 from chessboard_data import coordconversion as coordcon
 from chessboard_data import wbt as wb
+import copy
 
 
 TRANS = (63,72,204)
@@ -129,7 +130,7 @@ class Chesspiece(pygame.sprite.Sprite):
     def taken(self):
         self.kill()
 
-    def isMoveLegal(self,map,target,sprites,board):
+    def isMoveLegal(self,map,target,sprites):
         # Checks whether move is legal or not.
         # Checks whether target square is on the list returned from 
         # legal moves function, then produces a provisional map 
@@ -141,11 +142,14 @@ class Chesspiece(pygame.sprite.Sprite):
         inMoves = target in moves
         if inMoves == True:
             # Setting up potential future map
-            furureMap = map
+            futureMap = copy.deepcopy(map)
             futureMap[target[0]][target[1]] = self.pref
             futureMap[self.col][self.row] = 'null'
             teamKingCoords = sprites[self.team+'ki'].square
-            check = self.isCheck(futureMap,teamKingCoords,teamKingCoords)
+            if self.pref[1] == 'k':
+                check = self.isCheck(futureMap,teamKingCoords,target)
+            else:
+                check = self.isCheck(futureMap,teamKingCoords,teamKingCoords)
             if check == False:
                 return True
             else:
@@ -157,8 +161,9 @@ class Chesspiece(pygame.sprite.Sprite):
         # Given a map, returns a boolean as to whether the king would be
         # in check at the query square.  If currentKingSquare = querySquare,
         # determines whether king is currently in check
+        self.isPosInCheck = 1
         team = self.team
-
+        square = querySquare 
         # Moving king to square being queried
         if currentKingSquare != querySquare:
             remap = map
@@ -166,7 +171,104 @@ class Chesspiece(pygame.sprite.Sprite):
             remap[querySquare[0]][querySquare[1]] = team+'ki'
         else:
             remap = map
+        # Directions to check for check in
+        checkDirectionsNotKnight = [
+            'north',
+            'north-east',
+            'east','south-east',
+            'south',
+            'south-west',
+            'west',
+            'north-west'
+            ]
+        checkDirectionsKnights = [
+            'k1',
+            'k2',
+            'k3',
+            'k4',
+            'k5',
+            'k6',
+            'k7',
+            'k8'
+            ]
+        # Running search for check from long range pieces
+        for direction in checkDirectionsNotKnight:
+            self.checkSearch(remap,direction,square,True)
+        # Running search for check from knights
+        for direction in checkDirectionsKnights:
+            self.checkSearch(remap,direction,square,False)
+        # Searching for check from pawns
+        self.ischeckFromPawn(remap,self.team,square)
+        if self.isPosInCheck == 1:
+            return False
+        elif self.isPosInCheck == 0 :
+            return True
+
+
+    def checkSearch(self, map, direction, square, recurse):
          #Algorith similar to directionalSearch
+        possibleDirections = {
+            'north': (0,1),
+            'north-east': (1,1),
+            'east': (1,0),
+            'south-east': (1,-1),
+            'south': (0, -1),
+            'south-west': (-1,-1),
+            'west': (-1, 0),
+            'north-west': (-1, 1),
+            'k1': (1,2),
+            'k2': (2,1),
+            'k3': (2,-1),
+            'k4': (1,-2),
+            'k5': (-1,-2),
+            'k6': (-2,-1),
+            'k7': (-1,2),
+            'k8': (-2,1)
+        }
+        possibleThreats = {
+            'north': ['q','r'],
+            'north-east': ['q','b'],
+            'east': ['q','r'],
+            'south-east': ['q','b'],
+            'south': ['q','r'],
+            'south-west': ['q','b'],
+            'west': ['q','r'],
+            'north-west': ['q','b'],
+            'k1': ['n'],
+            'k2': ['n'],
+            'k3': ['n'],
+            'k4': ['n'],
+            'k5': ['n'],
+            'k6': ['n'],
+            'k7': ['n'],
+            'k8': ['n']
+        }
+        x = square[0]
+        y = square[1]
+
+        iterativeVector = possibleDirections[direction]
+
+        # Iterating once in given direction
+        x = coordcon["l2n"][x]
+        x += iterativeVector[0]
+        y = int(y)
+        y += iterativeVector[1]
+
+        # Checking still on board
+        if y < 9 and x < 9 and y > 0 and x > 0:
+            y = str(y)
+            x = coordcon["n2l"][str(x)]
+            testSquare = x+y
+            # checking square is empty or opposite team
+            if self.isEmpty(map,testSquare) is True:
+                if recurse is True:
+                    self.checkSearch(map, direction, testSquare,recurse)
+            elif self.isOtherTeam(map,testSquare) is True:
+                squareOccupant = map[x][y]
+                for threat in possibleThreats[direction]:
+                    if threat == squareOccupant[1]:
+                        # Position is in check
+                        self.isPosInCheck = self.isPosInCheck * 0
 
 
     def directionalSearch(self, map, direction, square, recurse):
@@ -209,23 +311,71 @@ class Chesspiece(pygame.sprite.Sprite):
             x = coordcon["n2l"][str(x)]
             testSquare = x+y
             # checking square is empty or opposite team
-            if self.emptyOrOtherTeam(map,testSquare) is True:
+            if self.isEmpty(map,testSquare) is True:
                 self.possibleMoves.append(testSquare)
                 if recurse is True:
                     self.directionalSearch(map, direction, testSquare,recurse)
+            elif self.isOtherTeam(map,testSquare) is True:
+                self.possibleMoves.append(testSquare)
 
  
-    def emptyOrOtherTeam(self, map, square):
+    def isOtherTeam(self, map, square):
         # returns true if square is empty or occupied by a member of 
         # the other team, else reutrns false
         squareStatus = map[square[0]][square[1]]
         team = self.team
-        if squareStatus == 'null':
-            return True
-        elif squareStatus[0] != team:
+        if (squareStatus[0] == 'b' and team == 'w') or (squareStatus[0] == 'w' and team == 'b') :
             return True
         else:
             return False
+
+
+    def ischeckFromPawn(self,remap,team,square):
+        kingX = coordcon['l2n'][square[0]]
+        kingY = int(square[1])
+        x1 = kingX-1
+        x2 = kingX+1
+        if team == 'w':
+            # White team, pawn position must be higher
+            Y = kingY+1
+            if Y < 9:
+                Y = str(Y)
+                if x1 > 0:
+                    trialX = coordcon['n2l'][str(x1)]
+                    status = remap[trialX][Y]
+                    if status[0] == 'b' and status[1] == 'p':
+                        self.isPosInCheck = self.isPosInCheck * 0
+                if x2 < 9:
+                    trialX = coordcon['n2l'][str(x2)]
+                    status = remap[trialX][Y]
+                    if status[0] == 'b' and status[1] == 'p':
+                        self.isPosInCheck = self.isPosInCheck * 0
+        else:
+            # Black team, pawn position must be lower
+            Y = kingY-1
+            if Y > 0:
+                Y = str(Y)
+                if x1 > 0:
+                    trialX = coordcon['n2l'][str(x1)]
+                    status = remap[trialX][Y]
+                    if status[0] == 'w' and status[1] == 'p':
+                        self.isPosInCheck = self.isPosInCheck * 0
+                if x2 < 9:
+                    trialX = coordcon['n2l'][str(x2)]
+                    status = remap[trialX][Y]
+                    if status[0] == 'w' and status[1] == 'p':
+                        self.isPosInCheck = self.isPosInCheck * 0
+
+
+    def isEmpty(self, map, square):
+        # returns true if square is empty or occupied by a member of 
+        # the other team, else reutrns false
+        squareStatus = map[square[0]][square[1]]
+        if squareStatus == 'null':
+            return True
+        else:
+            return False
+
 
 
 class King(Chesspiece):

@@ -97,7 +97,7 @@ class board:
     def spaceStatus(self, square):
         return self.set[square[0]][square[1]]
 
-    def boardSetUpdate(self,initial,new):
+    def boardMapUpdate(self,initial,new):
         self.set[new[0]][new[1]] = self.set[initial[0]][initial[1]]
         self.set[initial[0]][initial[1]] = 'null'
 
@@ -180,14 +180,14 @@ class board:
         sourcePieceSelection = tcount.pieceSelection
         
         # Checking legality of move
-        moveLegality = sprites[sourcePieceSelection].isMoveLegal(self.set,targetSquare,sprites,self)
+        moveLegality = sprites[sourcePieceSelection].isMoveLegal(self.set,targetSquare,sprites)
 
         if moveLegality == True:
             # Adding move to history
             moveCode = sourceSquare+targetSquare
             tcount.gameRecord.append(moveCode)
             # Updating board map
-            self.boardSetUpdate(sourceSquare,targetSquare)
+            self.boardMapUpdate(sourceSquare,targetSquare)
             # Moving sprite
             sprites[tcount.pieceSelection].move(targetSquare)
 

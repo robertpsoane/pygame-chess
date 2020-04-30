@@ -3,7 +3,6 @@
 Chess v0.2
 
 All pieces understand basic moves
-Currently working on implementing check
 
 Need to add the following moves:
     - Castling
