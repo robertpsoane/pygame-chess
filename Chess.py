@@ -5,8 +5,6 @@ Chess v0.2
 All pieces understand basic moves
 
 Need to add the following moves:
-    - Castling
-    - En Passant
     - Upgrading Pawns
 
 Future plans:

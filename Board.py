@@ -311,6 +311,59 @@ class board:
                             tcount.pieceSelection = 'null'
                             self.squareSelection = 'null'
                             return True
+        elif sourcePiece[1] == 'p':
+            # Checking for possible En Passant
+            history = tcount.gameRecord
+            previousMove = history[len(history) - 1]
+            if sourcePiece[0] == 'w' and source[1] == '5':
+                if target[0] == previousMove[0] and previousMove[3] == source[1] and previousMove[1] == '7':
+                    previousPiece = map[previousMove[2]][previousMove[3]]
+                    if previousPiece[0] == 'b' and previousPiece[1] == 'p':
+                        # Generating false board map to check if en passant would cause check
+                        previousMoveEnd = previousMove[2:4]
+                        takingPiece = map[source[0]][source[1]]
+                        checkMap = map.copy()
+                        checkMap[previousMoveEnd[0]][previousMoveEnd[1]] = 'null'
+                        checkMap[source[0]][source[1]] = 'null'
+                        checkMap[target[0]][target[1]] = takingPiece
+                        kingCoords = sprites['wki'].square
+                        checkCheck = sprites['wki'].isCheck(checkMap,kingCoords,kingCoords)
+                        if checkCheck is False:
+                            self.enPassant(sprites,takingPiece,source,target,previousMoveEnd,previousPiece,tcount)
+                            return True
+            if sourcePiece[0] == 'b' and source[1] == '4':
+                if target[0] == previousMove[0] and previousMove[3] == source[1] and previousMove[1] == '2':
+                    previousPiece = map[previousMove[2]][previousMove[3]]
+                    if previousPiece[0] == 'w' and previousPiece[1] == 'p':
+                        # Generating false board map to check if en passant would cause check
+                        previousMoveEnd = previousMove[2:4]
+                        takingPiece = map[source[0]][source[1]]
+                        checkMap = map.copy()
+                        checkMap[previousMoveEnd[0]][previousMoveEnd[1]] = 'null'
+                        checkMap[source[0]][source[1]] = 'null'
+                        checkMap[target[0]][target[1]] = takingPiece
+                        kingCoords = sprites['bki'].square
+                        checkCheck = sprites['bki'].isCheck(checkMap,kingCoords,kingCoords)
+                        if checkCheck is False:
+                            self.enPassant(sprites,takingPiece,source,target,previousMoveEnd,previousPiece,tcount)
+                            return True
+
+    def enPassant(self,sprites,attackingPiece,attackingSource,attackingTarget,defendingPosition,defendingPiece,tcount):
+        # Adding move to history
+        moveCode = attackingSource + attackingTarget
+        tcount.gameRecord.append(moveCode)
+        # Updating board map
+        self.set[defendingPosition[0]][defendingPosition[1]] = 'null'
+        self.set[attackingSource[0]][attackingSource[1]] = 'null'
+        self.set[attackingTarget[0]][attackingTarget[1]] = attackingPiece
+
+        # Moving sprites
+        sprites[attackingPiece].move(attackingTarget)
+        sprites[defendingPiece].taken()
+        # Deselecting previous selection from board
+        tcount.pieceSelection = 'null'
+        self.squareSelection = 'null'
+                            
                 
 
 
