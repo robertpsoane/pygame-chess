@@ -9,6 +9,7 @@ from spritesheet import SpriteSheet
 from chessboard_data import coordconversion as coordcon
 from chessboard_data import wbt as wb
 import copy
+import pymsgbox
 
 
 TRANS = (63,72,204)
@@ -48,6 +49,7 @@ initialSetup = {
         "bb2" : ["F","8","bishop"],
         "bqu" : ["D","8","queen"],
         "bki" : ["E","8","king"]
+
         
         }
 
@@ -59,7 +61,7 @@ black_setup_keys = ["bp1","bp2","bp3","bp4","bp5","bp6","bp7","bp8","br1","br2",
 ### Chesspiece class ###
 class Chesspiece(pygame.sprite.Sprite):
     
-    def __init__(self, screen, pos, images,pref):
+    def __init__(self, screen, pos, images,pref,whitegroup,blackgroup):
         # Declaring self to be a sprite
         pygame.sprite.Sprite.__init__(self)
         
@@ -77,6 +79,12 @@ class Chesspiece(pygame.sprite.Sprite):
         self.pref = pref
         self.team = pref[0]
         self.hasMoved = False
+        if self.team == 'w':
+            self.tgroup = whitegroup
+        else:
+            self.tgroup = blackgroup
+        self.images = images
+        self.pos = pos
 
         # self.image = image of piece
         # self.rect = set-up rect for piece
@@ -380,8 +388,8 @@ class Chesspiece(pygame.sprite.Sprite):
 
 class King(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
         self.directions = [
             'north',
             'north-east',
@@ -404,8 +412,8 @@ class King(Chesspiece):
 
 class Queen(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
         self.directions = [
             'north',
             'north-east',
@@ -428,8 +436,8 @@ class Queen(Chesspiece):
 
 class Bishop(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
         self.directions = [
             'north-east',
             'south-east',
@@ -448,8 +456,8 @@ class Bishop(Chesspiece):
 
 class Knight(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
         self.directions = [
             'k1',
             'k2',
@@ -472,8 +480,8 @@ class Knight(Chesspiece):
 
 class Rook(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
         self.directions = [
             'north',
             'east',
@@ -492,8 +500,8 @@ class Rook(Chesspiece):
 
 class Pawn(Chesspiece):
     
-    def __init__(self,screen,pos,sprites,pref):
-        Chesspiece.__init__(self,screen,pos,sprites,pref)
+    def __init__(self,screen,pos,sprites,pref,whitegroup,blackgroup):
+        Chesspiece.__init__(self,screen,pos,sprites,pref,whitegroup,blackgroup)
 
     def legalMoves(self,map):
         # Tests for legal moves case by case
@@ -569,7 +577,18 @@ class Pawn(Chesspiece):
                     self.possibleMoves.append(targetSqr)
 
         return self.possibleMoves
-        
+
+
+    def move(self,target):
+        moveX = self.grid[target[0]]
+        moveY = self.grid[target[1]]
+        self.rect.topleft = [moveX,moveY]
+        self.square = target
+        self.col = target[0]
+        self.row = target[1]
+        self.hasMoved = True
+
+
         
 ### function loading pieces pictures 
 def load_pieces(square_size):
@@ -636,45 +655,45 @@ def load_pieces(square_size):
 def initial_setup_board(screen,whitegroup,blackgroup,pos,images):
     sprite_dict = {}
     # Queens
-    sprite_dict['wqu'] = Queen(screen,pos,images,'wqu')
+    sprite_dict['wqu'] = Queen(screen,pos,images,'wqu',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wqu'])
-    sprite_dict['bqu'] = Queen(screen,pos,images,'bqu')
+    sprite_dict['bqu'] = Queen(screen,pos,images,'bqu',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bqu'])
     
     #Kings
-    sprite_dict['wki'] = King(screen,pos,images,'wki')
+    sprite_dict['wki'] = King(screen,pos,images,'wki',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wki'])
-    sprite_dict['bki'] = King(screen,pos,images,'bki')
+    sprite_dict['bki'] = King(screen,pos,images,'bki',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bki'])
 
     #Bishop
-    sprite_dict['wb1'] = Bishop(screen,pos,images,'wb1')
+    sprite_dict['wb1'] = Bishop(screen,pos,images,'wb1',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wb1'])
-    sprite_dict['wb2'] = Bishop(screen,pos,images,'wb2')
+    sprite_dict['wb2'] = Bishop(screen,pos,images,'wb2',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wb2'])
-    sprite_dict['bb1'] = Bishop(screen,pos,images,'bb1')
+    sprite_dict['bb1'] = Bishop(screen,pos,images,'bb1',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bb1'])
-    sprite_dict['bb2'] = Bishop(screen,pos,images,'bb2')
+    sprite_dict['bb2'] = Bishop(screen,pos,images,'bb2',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bb2'])
     
     #Knight
-    sprite_dict['wn1'] = Knight(screen,pos,images,'wn1')
+    sprite_dict['wn1'] = Knight(screen,pos,images,'wn1',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wn1'])
-    sprite_dict['wn2'] = Knight(screen,pos,images,'wn2')
+    sprite_dict['wn2'] = Knight(screen,pos,images,'wn2',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wn2'])
-    sprite_dict['bn1'] = Knight(screen,pos,images,'bn1')
+    sprite_dict['bn1'] = Knight(screen,pos,images,'bn1',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bn1'])
-    sprite_dict['bn2'] = Knight(screen,pos,images,'bn2')
+    sprite_dict['bn2'] = Knight(screen,pos,images,'bn2',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['bn2'])
     
     #Rook
-    sprite_dict['wr1'] = Rook(screen,pos,images,'wr1')
+    sprite_dict['wr1'] = Rook(screen,pos,images,'wr1',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wr1'])
-    sprite_dict['wr2'] = Rook(screen,pos,images,'wr2')
+    sprite_dict['wr2'] = Rook(screen,pos,images,'wr2',whitegroup,blackgroup)
     whitegroup.add(sprite_dict['wr2'])
-    sprite_dict['br1'] = Rook(screen,pos,images,'br1')
+    sprite_dict['br1'] = Rook(screen,pos,images,'br1',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['br1'])
-    sprite_dict['br2'] = Rook(screen,pos,images,'br2')
+    sprite_dict['br2'] = Rook(screen,pos,images,'br2',whitegroup,blackgroup)
     blackgroup.add(sprite_dict['br2'])
     
     #Pawns
@@ -682,11 +701,11 @@ def initial_setup_board(screen,whitegroup,blackgroup,pos,images):
     black_pawn_keys = ["bp1","bp2","bp3","bp4","bp5","bp6","bp7","bp8"]
     
     for key in white_pawn_keys:
-        sprite_dict[key] = Pawn(screen,pos,images,key)
+        sprite_dict[key] = Pawn(screen,pos,images,key,whitegroup,blackgroup)
         whitegroup.add(sprite_dict[key])
         
     for key in black_pawn_keys:
-        sprite_dict[key] = Pawn(screen,pos,images,key)
+        sprite_dict[key] = Pawn(screen,pos,images,key,whitegroup,blackgroup)
         blackgroup.add(sprite_dict[key])
         
     return sprite_dict

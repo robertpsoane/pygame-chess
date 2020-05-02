@@ -8,6 +8,7 @@ Created on Fri Apr 24 14:17:59 2020
 import pygame
 import numpy
 from chessboard_data import cb_init as cb
+import Pieces
 
 Bwhite = 255, 218, 115
 Bblack = 110, 80, 0
@@ -184,23 +185,59 @@ class board:
 
         # If standard legal move
         if moveLegality == True:
-            # Adding move to history
-            moveCode = sourceSquare+targetSquare
-            tcount.gameRecord.append(moveCode)
-            # Updating board map
-            self.boardMapUpdate(sourceSquare,targetSquare)
-            # Moving sprite
-            sprites[tcount.pieceSelection].move(targetSquare)
-
-            if takeAttempt == True:
-                # Taking black piece
-                sprites[targetPieceSelection].taken()
-                tcount.gameRecord.append(targetPieceSelection)
+            
+            # Checking for possible Pawn Upgrade
+            if (targetSquare[1] == '8' and tcount.pieceSelection[0:2] == 'wp') or (targetSquare[1] == '1' and tcount.pieceSelection[0:2] == 'bp'):
+                # Pawn Upgrade
+                # Adding move to history
+                moveCode = sourceSquare+targetSquare
+                tcount.gameRecord.append(moveCode)
+                # Updating board map
+                self.boardMapUpdate(sourceSquare,targetSquare)
                 
-            # Deselecting previous selection from board
-            tcount.pieceSelection = 'null'
-            self.squareSelection = 'null'
-            return True
+                # Removing pawn from board
+                pawn = tcount.pieceSelection
+                pawnSprite = sprites[pawn]
+                pawnGroup = pawnSprite.tgroup
+                pawnSprite.taken()
+                
+                # Setting up queen code
+                queenCode = pawn[0] + 'q' + pawn[2]
+                self.set[targetSquare[0]][targetSquare[1]] = queenCode
+                Pieces.initialSetup[queenCode] = [targetSquare[0],targetSquare[1],"queen"]
+
+                # Placing queen on board
+                sprites[queenCode] = Pieces.Queen(pawnSprite.screen,pawnSprite.pos,pawnSprite.images,queenCode,pawnGroup,pawnGroup)
+                pawnGroup.add(sprites[queenCode])
+
+                if takeAttempt == True:
+                    # Taking black piece
+                    sprites[targetPieceSelection].taken()
+                    tcount.gameRecord.append(targetPieceSelection)
+                    
+                # Deselecting previous selection from board
+                tcount.pieceSelection = 'null'
+                self.squareSelection = 'null'
+                return True
+
+            else:
+                # Adding move to history
+                moveCode = sourceSquare+targetSquare
+                tcount.gameRecord.append(moveCode)
+                # Updating board map
+                self.boardMapUpdate(sourceSquare,targetSquare)
+                # Moving sprite
+                sprites[tcount.pieceSelection].move(targetSquare)
+
+                if takeAttempt == True:
+                    # Taking black piece
+                    sprites[targetPieceSelection].taken()
+                    tcount.gameRecord.append(targetPieceSelection)
+                    
+                # Deselecting previous selection from board
+                tcount.pieceSelection = 'null'
+                self.squareSelection = 'null'
+                return True
         else:
             specialMove = self.checkSpecialMove(sourceSquare, targetSquare, targetPieceSelection, sprites, tcount)
             if specialMove is True:

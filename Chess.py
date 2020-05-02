@@ -4,8 +4,8 @@ Chess v0.2
 
 All pieces understand basic moves
 
-Need to add the following moves:
-    - Upgrading Pawns
+Next:
+    - Play as black, option, new game
 
 Future plans:
     - Undo Function
