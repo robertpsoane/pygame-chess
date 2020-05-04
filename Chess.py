@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Chess v0.2
+Chess v0.3
 
 All pieces understand basic moves
 
