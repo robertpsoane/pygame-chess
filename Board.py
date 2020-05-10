@@ -405,12 +405,13 @@ class board:
 
 
 # Function which sets up board coordinate system based on chosen screen size
-def define_board_positions(side, screen):
+def define_board_positions(side, screen, team):
     border = side/10
     square = (side-2*border)/8
     mid = square/2
 
-    Pos = {
+    if team == 'w':
+        Pos = {
             "A": border,
             "8": border,
             "B": border+square,
@@ -432,5 +433,30 @@ def define_board_positions(side, screen):
             "screensize": int(side),
             "mid": mid
             }
+    elif team == 'b':
+        Pos = {
+            "H": border,
+            "1": border,
+            "G": border+square,
+            "2": border+square,
+            "F": border+2*square,
+            "3": border+2*square,
+            "E": border+3*square,
+            "4": border+3*square,
+            "D": border+4*square,
+            "5": border+4*square,
+            "C": border+5*square,
+            "6": border+5*square,
+            "B": border+6*square,
+            "7": border+6*square,
+            "A": border+7*square,
+            "8": border+7*square,
+            "size": int(square),
+            "border": int(border),
+            "screensize": int(side),
+            "mid": mid
+            }
+    else:
+        raise ValueError
 
     return Pos

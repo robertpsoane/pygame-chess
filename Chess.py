@@ -46,7 +46,8 @@ clock = pygame.time.Clock()
 pygame.display.set_caption(GameName)
 
 # COnverting from cartesian to chess coordinates
-gridPositions = Board.define_board_positions(SIDE_SIZE, screen)
+team = 'w'
+gridPositions = Board.define_board_positions(SIDE_SIZE, screen, team)
 
 # Initialising pieces
 pieces_sprites = Pieces.load_pieces(gridPositions["size"])
@@ -65,9 +66,18 @@ chessBoard = Board.board(gridPositions, screen, gridPositions)
 # Setting up turns
 tcount = Mechanics.turns()
 
+# Setting up output text
+textSize = int(round(SIDE_SIZE/20))
+textHeight = int(round(SIDE_SIZE - textSize))
+
+global outputText
+outputText = Mechanics.Text(screen,SIDE_SIZE,textHeight,textSize,'[------------------------------]')
+
 # Defining frame-rate and running loop
 fps = 60
 run_me = True
+
+# Main game loop
 while run_me:
     # Limit frame rate
     clock.tick(fps)
@@ -80,6 +90,17 @@ while run_me:
             # Detecting mouse selection of pieces
             # Run mouseCLick function
             chessBoard.mouseClick(event, sprites, tcount)
+        
+        if event.type == pygame.KEYDOWN:
+            # Detecting key press
+            if event.unicode == 'm':
+                # Detecting open menu, selection used to manipulate board
+                selection = Mechanics.mainMenu(screen)
+            elif event.unicode == 'q':
+                # Quit
+                run_me = False
+            
+                   
 
     # Clear screen
     screen.fill(black)
@@ -88,6 +109,7 @@ while run_me:
     chessBoard.display()
     white_pieces.draw(screen)
     black_pieces.draw(screen)
+    outputText.display()
 
     # Display everything on screen
     pygame.display.flip()
