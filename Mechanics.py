@@ -31,16 +31,21 @@ class turns:
 
 class Text:
 
-    def __init__(self,screen,screenwidth,y,size,text):
+    def __init__(self,screen,screenwidth,x,y,size,text):
         pygame.init() 
         self.screen = screen
         self.width = screenwidth
         self.y = y
-        self.text = text
-        chosenFont = pygame.font.Font("Fonts/jackinp.ttf",size)
+        self.x = x
+        if text == 'def':
+            self.text = '>>'
+        else:
+            self.text = text
+        chosenFont = pygame.font.Font("Fonts/printer.ttf",size)
         self.chosenFont = chosenFont
-        self.surf, self.rect = self.text_objects(text,self.chosenFont)
-        self.rect.center = ((self.width/2),y)
+        self.surf, self.rect = self.text_objects(self.text,self.chosenFont)
+        self.rect.topleft = (self.x,self.y)
+        
 
 
     def text_objects(self,text,font):
@@ -49,7 +54,57 @@ class Text:
 
     def display(self):
         self.screen.blit(self.surf,self.rect)
+    
+    def updateText(self,message):
+        length = len(message)
+        if length > 40:
+            raise ValueError('Text can take max of 40 characters')
+        else:
+            centering = (40 - length)
+            if centering % 2 == 1:
+                # Odd number of characters
+                beforeSpace = int(centering-1/2)
+                afterSpace = int((centering-1/2)+1)
+            else:
+                beforeSpace = int(centering/2)
+                afterSpace = int(centering/2)
+            
+
+            string = '>> '+message
+            self.text = string
+            self.surf, self.rect = self.text_objects(self.text,self.chosenFont)
+            self.rect.topleft = (self.x,self.y)
 
 
-def mainMenu(screen):
-    return 1
+class Communication(Text):
+
+    def __init__(self,screen,screenwidth,x,y,size,text):
+        Text.__init__(self,screen,screenwidth,x,y,size,text)
+        self.state = 'null'
+        self.run_me = True
+
+
+    def keyboardInput(self,inputKey):
+        state = self.state
+        if inputKey == 'm' and state == 'null':
+            self.mainMenu()
+        elif inputKey == 'q' and state == 'menu':
+            self.quitGame()
+        elif inputKey == 't' and state == 'menu':
+            self.changeTeam()
+        elif inputKey == 'b' and state == 'menu':
+            self.back()
+
+    def mainMenu(self):
+        self.updateText('q:quit b:back')
+        self.state = 'menu'
+    
+    def quitGame(self):
+        self.run_me = False
+
+    def changeTeam(self):
+        pass
+
+    def back(self):
+        self.updateText('')
+        self.state = 'null'

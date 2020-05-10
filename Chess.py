@@ -66,25 +66,31 @@ chessBoard = Board.board(gridPositions, screen, gridPositions)
 # Setting up turns
 tcount = Mechanics.turns()
 
-# Setting up output text
-textSize = int(round(SIDE_SIZE/20))
+# Setting up text
+textSize = int(round(SIDE_SIZE/30))
 textHeight = int(round(SIDE_SIZE - textSize))
 
-global outputText
-outputText = Mechanics.Text(screen,SIDE_SIZE,textHeight,textSize,'[------------------------------]')
+# Setting up instructions text
+instructString = 'm:menu'
+instructionsText = Mechanics.Text(screen,SIDE_SIZE,0,0,textSize,instructString)
+instructionsText.rect.center = (int(round(SIDE_SIZE/2)),textSize)
 
+# Setting up output text
+#outputText = Mechanics.Text(screen,SIDE_SIZE,0,textHeight,textSize,'def')
+
+communicator = Mechanics.Communication(screen,SIDE_SIZE,0,textHeight,textSize,'def')
 # Defining frame-rate and running loop
 fps = 60
 run_me = True
 
 # Main game loop
-while run_me:
+while communicator.run_me:
     # Limit frame rate
     clock.tick(fps)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run_me = False
+            communicator.run_me = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Detecting mouse selection of pieces
@@ -93,14 +99,7 @@ while run_me:
         
         if event.type == pygame.KEYDOWN:
             # Detecting key press
-            if event.unicode == 'm':
-                # Detecting open menu, selection used to manipulate board
-                selection = Mechanics.mainMenu(screen)
-            elif event.unicode == 'q':
-                # Quit
-                run_me = False
-            
-                   
+            communicator.keyboardInput(event.unicode)        
 
     # Clear screen
     screen.fill(black)
@@ -109,7 +108,8 @@ while run_me:
     chessBoard.display()
     white_pieces.draw(screen)
     black_pieces.draw(screen)
-    outputText.display()
+    communicator.display()
+    instructionsText.display()
 
     # Display everything on screen
     pygame.display.flip()
