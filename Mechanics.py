@@ -82,6 +82,7 @@ class Communication(Text):
         Text.__init__(self,screen,screenwidth,x,y,size,text)
         self.state = 'null'
         self.run_me = True
+        self.rerun = False
 
 
     def keyboardInput(self,inputKey):
@@ -94,6 +95,7 @@ class Communication(Text):
             self.changeTeam()
         elif inputKey == 'b' and state == 'menu':
             self.back()
+
 
     def mainMenu(self):
         self.updateText('q:quit b:back')

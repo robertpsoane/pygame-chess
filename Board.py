@@ -23,6 +23,7 @@ class board:
         self.grid = grid
         self.set = cb
         self.squareSelection = 'null'
+        self.orientation = Pos['orient-team']
 
     def display(self):
         P = self.Pos
@@ -45,7 +46,7 @@ class board:
     # Functions which deal with a screen press
     def mouseClick(self, click, sprites, tcount):
         pos = click.pos
-        if self .checkClickInBoard(pos):
+        if self.checkClickInBoard(pos):
             # Converting from cartesian coordinates to chess board space reference
             square = self.detectSpace(pos)
 
@@ -73,8 +74,12 @@ class board:
         y_int = int(numpy.floor(y/spacesize))
 
         # Converting to chess board references
-        rows = ["A", "B", "C", "D", "E", "F", "G", "H"]
-        cols = ["8", "7", "6", "5", "4", "3", "2", "1"]
+        if self.orientation == 'w':
+            rows = ["A", "B", "C", "D", "E", "F", "G", "H"]
+            cols = ["8", "7", "6", "5", "4", "3", "2", "1"]
+        else:
+            rows = ["H", "G", "F", "E", "D", "C", "B", "A"]
+            cols = ["1", "2", "3", "4", "5", "6", "7", "8"]
         row = rows[x_int]
         col = cols[y_int]
 
@@ -431,7 +436,8 @@ def define_board_positions(side, screen, team):
             "size": int(square),
             "border": int(border),
             "screensize": int(side),
-            "mid": mid
+            "mid": mid,
+            "orient-team": team
             }
     elif team == 'b':
         Pos = {
@@ -454,7 +460,8 @@ def define_board_positions(side, screen, team):
             "size": int(square),
             "border": int(border),
             "screensize": int(side),
-            "mid": mid
+            "mid": mid,
+            "orient-team": team
             }
     else:
         raise ValueError

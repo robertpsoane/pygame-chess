@@ -46,7 +46,7 @@ clock = pygame.time.Clock()
 pygame.display.set_caption(GameName)
 
 # COnverting from cartesian to chess coordinates
-team = 'w'
+team = 'b'
 gridPositions = Board.define_board_positions(SIDE_SIZE, screen, team)
 
 # Initialising pieces
@@ -76,9 +76,11 @@ instructionsText = Mechanics.Text(screen,SIDE_SIZE,0,0,textSize,instructString)
 instructionsText.rect.center = (int(round(SIDE_SIZE/2)),textSize)
 
 # Setting up output text
-#outputText = Mechanics.Text(screen,SIDE_SIZE,0,textHeight,textSize,'def')
-
 communicator = Mechanics.Communication(screen,SIDE_SIZE,0,textHeight,textSize,'def')
+
+# adding communicator to chessboard
+chessBoard.communicator = communicator
+
 # Defining frame-rate and running loop
 fps = 60
 run_me = True
@@ -99,7 +101,7 @@ while communicator.run_me:
         
         if event.type == pygame.KEYDOWN:
             # Detecting key press
-            communicator.keyboardInput(event.unicode)        
+            communicator.keyboardInput(event.unicode)
 
     # Clear screen
     screen.fill(black)
