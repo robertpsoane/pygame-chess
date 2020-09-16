@@ -70,5 +70,5 @@ class startMenu():
             cg('b')
         elif k == '4':
             self.play = False
-        elif k = '3':
+        elif k == '3':
             print('Online play isnt functional')
