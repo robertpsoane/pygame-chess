@@ -12,7 +12,7 @@ Created on Sat Apr 25 15:35:32 2020
 @author: Robert Soane
 """
 import pygame
-import pygame_menu
+#import pygame_menu
 
 class turns:
 
